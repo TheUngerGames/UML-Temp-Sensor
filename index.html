@@ -24,7 +24,7 @@
       margin-top: 20px;
     }
     #chartContainer {
-      width: 140%;
+      width: 100%;
     }
     .chart {
       height: 300px; /* Adjust the height to make the plots shorter */
@@ -87,6 +87,8 @@
       xaxis: { title: 'Time' },
       yaxis: { title: 'Humidity (%)' },
       height: 300 // Adjust the height to make the plot shorter
+      width: window.innerWidth * 0.9
+      responsive: true
     };
     
    
