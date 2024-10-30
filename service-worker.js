@@ -2,7 +2,7 @@ const cacheName = 'esp32-data-cache-v1';
 const assetsToCache = [
   '/',
   '/index.html',
-  '/manifest1.json',
+  '/manifest.json',
   '/service-worker.js',
   '/style.css',
   '/icons/icon-192x192.png',
