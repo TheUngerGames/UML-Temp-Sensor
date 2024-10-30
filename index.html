@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -32,12 +31,12 @@
       try {
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ name: 'ESP32_HDC1080' }],
-          optionalServices: ['00001101-0000-1000-8000-00805f9b34fb']
+          optionalServices: ['battery_service']
         });
 
         const server = await device.gatt.connect();
-        const service = await server.getPrimaryService('00001101-0000-1000-8000-00805f9b34fb');
-        const characteristic = await service.getCharacteristic('00001101-0000-1000-8000-00805f9b34fb');
+        const service = await server.getPrimaryService('battery_service');
+        const characteristic = await service.getCharacteristic('battery_level');
 
         characteristic.startNotifications();
         characteristic.addEventListener('characteristicvaluechanged', (event) => {
