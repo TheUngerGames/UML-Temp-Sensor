@@ -30,12 +30,12 @@
     connectButton.addEventListener('click', async () => {
       try {
         const device = await navigator.bluetooth.requestDevice({
-          filters: [{ services: ['19b10000-e8f2-537e-4f6c-d104768a1214'] }]
+          filters: [{ services: ['9e54dbf9-9504-441b-bb14-4a859df25769'] }]
         });
 
         const server = await device.gatt.connect();
-        const service = await server.getPrimaryService('19b10000-e8f2-537e-4f6c-d104768a1214');
-        const characteristic = await service.getCharacteristic('19b10000-e8f2-537e-4f6c-d104768a1214');
+        const service = await server.getPrimaryService('9e54dbf9-9504-441b-bb14-4a859df25769');
+        const characteristic = await service.getCharacteristic('9e54dbf9-9504-441b-bb14-4a859df25769');
 
         characteristic.startNotifications();
         characteristic.addEventListener('characteristicvaluechanged', (event) => {
