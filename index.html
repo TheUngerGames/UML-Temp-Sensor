@@ -10,8 +10,8 @@
   <meta name="apple-mobile-web-app-title" content="ESP32 Bluetooth Data">
   <meta name="msapplication-starturl" content="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="icon" type="png" sizes="192x192" href="icons/icon-192x192.png">
-  <link rel="apple-touch-icon" type="png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,7 +22,12 @@
     #data {
       margin-top: 20px;
     }
+    #chartContainer {
+      width: 100%;
+      height: 400px;
+    }
   </style>
+  <script src="/UML-Temp-Sensor/js/plotly.js"></script>
 </head>
 <body>
   <h1>ESP32 Bluetooth Data</h1>
@@ -30,6 +35,9 @@
   <div id="data">
     <p id="temperature">Temperature: N/A</p>
     <p id="humidity">Humidity: N/A</p>
+  </div>
+  <div id="chartContainer">
+    <div id="myChart"></div>
   </div>
 
   <script>
@@ -47,6 +55,30 @@
     let temperatureElement = document.getElementById('temperature');
     let humidityElement = document.getElementById('humidity');
 
+    let temperatureData = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Temperature (°C)',
+      line: { color: 'red' }
+    };
+
+    let humidityData = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Humidity (%)',
+      line: { color: 'blue' }
+    };
+
+    let layout = {
+      title: 'Temperature and Humidity Data',
+      xaxis: { title: 'Time' },
+      yaxis: { title: 'Value' }
+    };
+
+    Plotly.newPlot('myChart', [temperatureData, humidityData], layout);
+
     connectButton.addEventListener('click', async () => {
       try {
         const device = await navigator.bluetooth.requestDevice({
@@ -63,6 +95,14 @@
           let [temperature, humidity] = value.split(',').map(s => s.split(':')[1].trim());
           temperatureElement.textContent = `Temperature: ${temperature}`;
           humidityElement.textContent = `Humidity: ${humidity}`;
+
+          let now = new Date();
+          temperatureData.x.push(now);
+          temperatureData.y.push(parseFloat(temperature));
+          humidityData.x.push(now);
+          humidityData.y.push(parseFloat(humidity));
+          Plotly.update('myChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+          Plotly.update('myChart', { x: [humidityData.x], y: [humidityData.y] }, [1]);
         });
 
         connectButton.textContent = 'Connected';
