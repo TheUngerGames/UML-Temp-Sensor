@@ -1,6 +1,6 @@
 {
-  "name": "ESP32 Bluetooth Data",
-  "short_name": "ESP32 Data",
+  "name": "UML Sensor",
+  "short_name": "UML Sensor",
   "description": "A web app to display temperature and humidity data from ESP32 over Bluetooth",
   "start_url": "/UML-Temp-Sensor/index.html",
   "display": "standalone",
