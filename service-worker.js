@@ -6,7 +6,8 @@ const assetsToCache = [
   '/UML-Temp-Sensor/service-worker.js',
   '/UML-Temp-Sensor/style.css',
   '/UML-Temp-Sensor/icons/icon-192x192.png',
-  '/UML-Temp-Sensor/icons/icon-512x512.png'
+  '/UML-Temp-Sensor/icons/icon-512x512.png',
+  '/UML-Temp-Sensor/js/chart.min.js'
 ];
 
 self.addEventListener('install', event => {
