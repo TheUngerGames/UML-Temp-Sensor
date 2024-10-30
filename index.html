@@ -8,10 +8,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="application-name" content="ESP32 Bluetooth Data">
   <meta name="apple-mobile-web-app-title" content="ESP32 Bluetooth Data">
-  <meta name="msapplication-starturl" content="/UML-Temp-Sensor/">
+  <meta name="msapplication-starturl" content="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="icon" type="image/png" sizes="192x192" href="/UML-Temp-Sensor/icons/icon-192x192.png">
-  <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="/UML-Temp-Sensor/icons/icon-192x192.png">
+  <link rel="icon" type="png" sizes="192x192" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" type="png" sizes="192x192" href="icons/icon-192x192.png">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,13 +22,7 @@
     #data {
       margin-top: 20px;
     }
-    #chartContainer {
-      width: 100%;
-      height: 400px;
-    }
   </style>
-  <script src="/UML-Temp-Sensor/js/moment.min.js"></script>
-  <script src="/UML-Temp-Sensor/js/chart.min.js"></script>
 </head>
 <body>
   <h1>ESP32 Bluetooth Data</h1>
@@ -36,9 +30,6 @@
   <div id="data">
     <p id="temperature">Temperature: N/A</p>
     <p id="humidity">Humidity: N/A</p>
-  </div>
-  <div id="chartContainer">
-    <canvas id="myChart"></canvas>
   </div>
 
   <script>
@@ -56,38 +47,6 @@
     let temperatureElement = document.getElementById('temperature');
     let humidityElement = document.getElementById('humidity');
 
-    let ctx = document.getElementById('myChart').getContext('2d');
-    let chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Temperature (°C)',
-          borderColor: 'rgba(255, 99, 132, 1)',
-          backgroundColor: 'rgba(255, 99, 132, 0.2)',
-          data: []
-        }, {
-          label: 'Humidity (%)',
-          borderColor: 'rgba(54, 162, 235, 1)',
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          data: []
-        }]
-      },
-      options: {
-        scales: {
-          x: {
-            type: 'time',
-            time: {
-              unit: 'minute'
-            }
-          },
-          y: {
-            beginAtZero: true
-          }
-        }
-      }
-    });
-
     connectButton.addEventListener('click', async () => {
       try {
         const device = await navigator.bluetooth.requestDevice({
@@ -104,12 +63,6 @@
           let [temperature, humidity] = value.split(',').map(s => s.split(':')[1].trim());
           temperatureElement.textContent = `Temperature: ${temperature}`;
           humidityElement.textContent = `Humidity: ${humidity}`;
-
-          let now = new Date();
-          chart.data.labels.push(now);
-          chart.data.datasets[0].data.push({ x: now, y: parseFloat(temperature) });
-          chart.data.datasets[1].data.push({ x: now, y: parseFloat(humidity) });
-          chart.update();
         });
 
         connectButton.textContent = 'Connected';
