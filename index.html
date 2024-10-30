@@ -89,8 +89,8 @@
     };
     
    
-    Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, {showlegend: false}, {scrollZoom: true}, {displaylogo: false});
-    Plotly.newPlot('humidityChart', [humidityData], humidityLayout, {showlegend: false}, {scrollZoom: true}, {displaylogo: false});
+    Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, {displaylogo: false});
+    Plotly.newPlot('humidityChart', [humidityData], humidityLayout, {displaylogo: false});
 
     connectButton.addEventListener('click', async () => {
       try {
