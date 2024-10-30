@@ -37,7 +37,8 @@
     <p id="humidity">Humidity: N/A</p>
   </div>
   <div id="chartContainer">
-    <div id="myChart"></div>
+    <div id="temperatureChart"></div>
+    <div id="humidityChart"></div>
   </div>
 
   <script>
@@ -71,13 +72,20 @@
       line: { color: 'blue' }
     };
 
-    let layout = {
-      title: 'Temperature and Humidity Data',
+    let temperatureLayout = {
+      title: 'Temperature Data',
       xaxis: { title: 'Time' },
-      yaxis: { title: 'Value' }
+      yaxis: { title: 'Temperature (°C)' }
     };
 
-    Plotly.newPlot('myChart', [temperatureData, humidityData], layout);
+    let humidityLayout = {
+      title: 'Humidity Data',
+      xaxis: { title: 'Time' },
+      yaxis: { title: 'Humidity (%)' }
+    };
+
+    Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout);
+    Plotly.newPlot('humidityChart', [humidityData], humidityLayout);
 
     connectButton.addEventListener('click', async () => {
       try {
@@ -101,8 +109,8 @@
           temperatureData.y.push(parseFloat(temperature));
           humidityData.x.push(now);
           humidityData.y.push(parseFloat(humidity));
-          Plotly.update('myChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-          Plotly.update('myChart', { x: [humidityData.x], y: [humidityData.y] }, [1]);
+          Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+          Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
         });
 
         connectButton.textContent = 'Connected';
