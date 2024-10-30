@@ -1,4 +1,3 @@
-
 body {
   font-family: Arial, sans-serif;
   text-align: center;
@@ -48,4 +47,9 @@ h1 {
 
 .plotly {
   margin: 0 auto; /* Center the Plotly graph */
+}
+
+.plotly .modebar {
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
