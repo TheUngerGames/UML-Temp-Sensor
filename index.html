@@ -34,7 +34,7 @@
 
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('/UML-Temp-Sensor/service-worker.js')
         .then(registration => {
           console.log('Service Worker registered with scope:', registration.scope);
         })
@@ -67,6 +67,13 @@
 
         connectButton.textContent = 'Connected';
         connectButton.disabled = true;
+
+        device.addEventListener('gattserverdisconnected', () => {
+          connectButton.textContent = 'Connect to ESP32';
+          connectButton.disabled = false;
+          temperatureElement.textContent = 'Temperature: N/A';
+          humidityElement.textContent = 'Humidity: N/A';
+        });
       } catch (error) {
         console.error('Error:', error);
       }
