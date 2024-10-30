@@ -2,7 +2,7 @@
   "name": "ESP32 Bluetooth Data",
   "short_name": "ESP32 Data",
   "description": "A web app to display temperature and humidity data from ESP32 over Bluetooth",
-  "start_url": "/index.html",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
