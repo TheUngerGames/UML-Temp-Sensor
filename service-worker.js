@@ -1,12 +1,12 @@
 const cacheName = 'esp32-data-cache-v1';
 const assetsToCache = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  '/service-worker.js',
-  '/style.css',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  '/UML-Temp-Sensor/',
+  '/UML-Temp-Sensor/index.html',
+  '/UML-Temp-Sensor/manifest.json',
+  '/UML-Temp-Sensor/service-worker.js',
+  '/UML-Temp-Sensor/style.css',
+  '/UML-Temp-Sensor/icons/icon-192x192.png',
+  '/UML-Temp-Sensor/icons/icon-512x512.png'
 ];
 
 self.addEventListener('install', event => {
