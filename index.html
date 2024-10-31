@@ -79,17 +79,18 @@
       title: 'Temperature Data',
       xaxis: { title: 'Time' },
       yaxis: { title: 'Temperature (°C)' },
-      height: 300 // Adjust the height to make the plot shorter
+      height: 300, // Adjust the height to make the plot shorter
+      margin: { l: 30, r: 10, t: 30, b: 30 } // Adjust margins for better mobile display
     };
 
     let humidityLayout = {
       title: 'Humidity Data',
       xaxis: { title: 'Time' },
       yaxis: { title: 'Humidity (%)' },
-      height: 300 // Adjust the height to make the plot shorter
+      height: 300, // Adjust the height to make the plot shorter
+      margin: { l: 30, r: 10, t: 30, b: 30 } // Adjust margins for better mobile display
     };
     
-   
     Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, {displaylogo: false});
     Plotly.newPlot('humidityChart', [humidityData], humidityLayout, {displaylogo: false});
     
