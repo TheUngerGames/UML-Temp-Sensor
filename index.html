@@ -138,14 +138,12 @@
       humidityElement.textContent = `Humidity: ${humidity}`;
 
       let now = new Date();
-      if (now <= new Date()) {
-        temperatureData.x.push(now);
-        temperatureData.y.push(parseFloat(temperature));
-        humidityData.x.push(now);
-        humidityData.y.push(parseFloat(humidity));
-        Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-        Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
-      }
+      temperatureData.x.push(now);
+      temperatureData.y.push(parseFloat(temperature));
+      humidityData.x.push(now);
+      humidityData.y.push(parseFloat(humidity));
+      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
     }
 
     clearButton.addEventListener('click', () => {
