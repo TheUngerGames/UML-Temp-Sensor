@@ -103,18 +103,23 @@
           humidityElement.textContent = `Humidity: ${humidity}`;
 
           let now = new Date();
-          temperatureData.x.push(now);
-          temperatureData.y.push(parseFloat(temperature));
-          humidityData.x.push(now);
-          humidityData.y.push(parseFloat(humidity));
+          let time = new Date(parseInt(now.getTime()));
 
-          localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
-          localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
-          localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
-          localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
+          // Ignore future data points
+          if (time <= now) {
+            temperatureData.x.push(time);
+            temperatureData.y.push(parseFloat(temperature));
+            humidityData.x.push(time);
+            humidityData.y.push(parseFloat(humidity));
 
-          Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-          Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+            localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
+            localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
+            localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
+            localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
+
+            Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+            Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+          }
         });
 
         connectButton.textContent = 'Connected';
