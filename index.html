@@ -98,14 +98,14 @@
         characteristic.startNotifications();
         characteristic.addEventListener('characteristicvaluechanged', (event) => {
           let value = new TextDecoder().decode(event.target.value);
-          let [temperature, humidity] = value.split(',').map(s => s.split(':')[1].trim());
+          let [timestamp, temperature, humidity] = value.split(',').map(s => s.trim());
           temperatureElement.textContent = `Temperature: ${temperature}`;
           humidityElement.textContent = `Humidity: ${humidity}`;
 
-          let now = new Date();
-          temperatureData.x.push(now);
+          let time = new Date(parseInt(timestamp));
+          temperatureData.x.push(time);
           temperatureData.y.push(parseFloat(temperature));
-          humidityData.x.push(now);
+          humidityData.x.push(time);
           humidityData.y.push(parseFloat(humidity));
 
           localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
