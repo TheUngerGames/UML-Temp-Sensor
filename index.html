@@ -89,8 +89,19 @@
       modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
     };
 
-    Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
-    Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
+    function plotData() {
+      // Filter out future data points
+      const now = new Date();
+      temperatureData.x = temperatureData.x.filter(date => new Date(date) <= now);
+      temperatureData.y = temperatureData.y.slice(0, temperatureData.x.length);
+      humidityData.x = humidityData.x.filter(date => new Date(date) <= now);
+      humidityData.y = humidityData.y.slice(0, humidityData.x.length);
+
+      Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
+      Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
+    }
+
+    plotData();
 
     window.addEventListener('beforeunload', () => {
       localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
@@ -178,10 +189,7 @@
     });
 
     // Plot the saved data after refresh
-    window.addEventListener('load', () => {
-      Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
-      Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
-    });
+    window.addEventListener('load', plotData);
   </script>
 </body>
 </html>
