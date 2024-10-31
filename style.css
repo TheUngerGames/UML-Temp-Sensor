@@ -11,7 +11,7 @@ h1 {
   color: #333;
 }
 
-#connectButton, #exportButton {
+#connectButton, #exportButton, #clearButton, #exportButton {
   background-color: #007bff;
   color: white;
   border: none;
