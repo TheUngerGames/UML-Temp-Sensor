@@ -21,9 +21,8 @@
   </style>
 </head>
 <body>
-  <h1>HDC1080</h1>
-  <button id="connectButton">Connect</button>
-  <button id="disconnectButton" disabled>Disconnect</button>
+  <h1>ESP32 Bluetooth Data</h1>
+  <button id="connectButton">Connect to ESP32</button>
   <button id="clearButton">Clear Data</button>
   <button id="exportButton">Export Data to CSV</button>
   <div id="data">
@@ -47,7 +46,6 @@
     }
 
     let connectButton = document.getElementById('connectButton');
-    let disconnectButton = document.getElementById('disconnectButton');
     let clearButton = document.getElementById('clearButton');
     let exportButton = document.getElementById('exportButton');
     let temperatureElement = document.getElementById('temperature');
@@ -101,53 +99,54 @@
       localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
     });
 
+    let device;
+    let characteristic;
+
     connectButton.addEventListener('click', async () => {
-      try {
-        const device = await navigator.bluetooth.requestDevice({
-          filters: [{ services: ['9e54dbf9-9504-441b-bb14-4a859df25769'] }]
-        });
+      if (connectButton.textContent === 'Connect to ESP32') {
+        try {
+          device = await navigator.bluetooth.requestDevice({
+            filters: [{ services: ['9e54dbf9-9504-441b-bb14-4a859df25769'] }]
+          });
 
-        const server = await device.gatt.connect();
-        const service = await server.getPrimaryService('9e54dbf9-9504-441b-bb14-4a859df25769');
-        const characteristic = await service.getCharacteristic('9e54dbf9-9504-441b-bb14-4a859df25769');
+          const server = await device.gatt.connect();
+          const service = await server.getPrimaryService('9e54dbf9-9504-441b-bb14-4a859df25769');
+          characteristic = await service.getCharacteristic('9e54dbf9-9504-441b-bb14-4a859df25769');
 
-        characteristic.startNotifications();
-        characteristic.addEventListener('characteristicvaluechanged', (event) => {
-          let value = new TextDecoder().decode(event.target.value);
-          let [temperature, humidity] = value.split(',').map(s => s.split(':')[1].trim());
-          temperatureElement.textContent = `Temperature: ${temperature}`;
-          humidityElement.textContent = `Humidity: ${humidity}`;
+          characteristic.startNotifications();
+          characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
 
-          let now = new Date();
-          if (now <= new Date()) {
-            temperatureData.x.push(now);
-            temperatureData.y.push(parseFloat(temperature));
-            humidityData.x.push(now);
-            humidityData.y.push(parseFloat(humidity));
-            Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-            Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
-          }
-        });
-
-        connectButton.textContent = 'Connected';
-        connectButton.disabled = true;
-        disconnectButton.disabled = false;
-
-        device.addEventListener('gattserverdisconnected', () => {
-          connectButton.textContent = 'Connect';
-          connectButton.disabled = false;
-          disconnectButton.disabled = true;
-          temperatureElement.textContent = 'Temperature: N/A';
-          humidityElement.textContent = 'Humidity: N/A';
-        });
-
-        disconnectButton.addEventListener('click', () => {
+          connectButton.textContent = 'Disconnect from ESP32';
+        } catch (error) {
+          console.error('Error:', error);
+        }
+      } else {
+        if (device && device.gatt.connected) {
+          characteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
           device.gatt.disconnect();
-        });
-      } catch (error) {
-        console.error('Error:', error);
+        }
+        connectButton.textContent = 'Connect to ESP32';
+        temperatureElement.textContent = 'Temperature: N/A';
+        humidityElement.textContent = 'Humidity: N/A';
       }
     });
+
+    function handleCharacteristicValueChanged(event) {
+      let value = new TextDecoder().decode(event.target.value);
+      let [temperature, humidity] = value.split(',').map(s => s.split(':')[1].trim());
+      temperatureElement.textContent = `Temperature: ${temperature}`;
+      humidityElement.textContent = `Humidity: ${humidity}`;
+
+      let now = new Date();
+      if (now <= new Date()) {
+        temperatureData.x.push(now);
+        temperatureData.y.push(parseFloat(temperature));
+        humidityData.x.push(now);
+        humidityData.y.push(parseFloat(humidity));
+        Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+        Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+      }
+    }
 
     clearButton.addEventListener('click', () => {
       temperatureData.x = [];
