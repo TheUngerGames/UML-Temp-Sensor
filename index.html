@@ -134,7 +134,7 @@
         disconnectButton.disabled = false;
 
         device.addEventListener('gattserverdisconnected', () => {
-          connectButton.textContent = 'Connect to ESP32';
+          connectButton.textContent = 'Connect';
           connectButton.disabled = false;
           disconnectButton.disabled = true;
           temperatureElement.textContent = 'Temperature: N/A';
