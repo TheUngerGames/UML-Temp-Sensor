@@ -1,183 +1,50 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>UML Sensor</title>
-  <link rel="manifest" href="/UML-Temp-Sensor/manifest.json">
-  <meta name="theme-color" content="#000000">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="ESP32 Bluetooth Data">
-  <meta name="apple-mobile-web-app-title" content="ESP32 Bluetooth Data">
-  <meta name="msapplication-starturl" content="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-  <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
-  <link rel="stylesheet" href="/UML-Temp-Sensor/style.css">
-  <script src="/UML-Temp-Sensor/js/plotly.js"></script>
-  <style>
-    body {
-      overscroll-behavior: none; /* Disable pull-down refresh on mobile devices */
-    }
-  </style>
-</head>
-<body>
-  <h1>ESP32 Bluetooth Data</h1>
-  <button id="connectButton">Connect to ESP32</button>
-  <button id="clearButton">Clear Data</button>
-  <button id="exportButton">Export Data to CSV</button>
-  <div id="data">
-    <p id="temperature">Temperature: N/A</p>
-    <p id="humidity">Humidity: N/A</p>
-  </div>
-  <div id="chartContainer">
-    <div id="temperatureChart" class="chart"></div>
-    <div id="humidityChart" class="chart"></div>
-  </div>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  padding: 0;
+  background-color: #f4f4f4;
+}
 
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/UML-Temp-Sensor/service-worker.js')
-        .then(registration => {
-          console.log('Service Worker registered with scope:', registration.scope);
-        })
-        .catch(error => {
-          console.log('Service Worker registration failed:', error);
-        });
-    }
+h1 {
+  margin-top: 20px;
+  color: #333;
+}
 
-    let connectButton = document.getElementById('connectButton');
-    let clearButton = document.getElementById('clearButton');
-    let exportButton = document.getElementById('exportButton');
-    let temperatureElement = document.getElementById('temperature');
-    let humidityElement = document.getElementById('humidity');
+#connectButton, #exportButton, #clearButton, #disconnectButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 5px;
+  margin-top: 20px;
+}
 
-    let temperatureData = {
-      x: JSON.parse(localStorage.getItem('temperatureDataX')) || [],
-      y: JSON.parse(localStorage.getItem('temperatureDataY')) || [],
-      mode: 'lines',
-      name: 'Temperature (°C)',
-      line: { color: 'red' }
-    };
+#connectButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
 
-    let humidityData = {
-      x: JSON.parse(localStorage.getItem('humidityDataX')) || [],
-      y: JSON.parse(localStorage.getItem('humidityDataY')) || [],
-      mode: 'lines',
-      name: 'Humidity (%)',
-      line: { color: 'blue' }
-    };
+#data {
+  margin-top: 20px;
+}
 
-    let temperatureLayout = {
-      title: 'Temperature Data',
-      xaxis: { title: 'Time' },
-      yaxis: { title: 'Temperature (°C)' },
-      height: 300,
-      margin: { l: 50, r: 30, t: 30, b: 30 }
-    };
+#chartContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-    let humidityLayout = {
-      title: 'Humidity Data',
-      xaxis: { title: 'Time' },
-      yaxis: { title: 'Humidity (%)' },
-      height: 300,
-      margin: { l: 50, r: 30, t: 30, b: 30 }
-    };
+.chart {
+  width: 90%;
+  max-width: 800px;
+  height: 300px; /* Adjust the height to make the plots shorter */
+  margin-top: 20px;
+}
 
-    let config = {
-      displaylogo: false,
-      scrollZoom: false,
-      modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
-    };
-
-    Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
-    Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
-
-    window.addEventListener('beforeunload', () => {
-      localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
-      localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
-      localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
-      localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
-    });
-
-    let device;
-    let characteristic;
-
-    connectButton.addEventListener('click', async () => {
-      if (connectButton.textContent === 'Connect to ESP32') {
-        try {
-          device = await navigator.bluetooth.requestDevice({
-            filters: [{ services: ['9e54dbf9-9504-441b-bb14-4a859df25769'] }]
-          });
-
-          const server = await device.gatt.connect();
-          const service = await server.getPrimaryService('9e54dbf9-9504-441b-bb14-4a859df25769');
-          characteristic = await service.getCharacteristic('9e54dbf9-9504-441b-bb14-4a859df25769');
-
-          characteristic.startNotifications();
-          characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
-
-          connectButton.textContent = 'Disconnect from ESP32';
-        } catch (error) {
-          console.error('Error:', error);
-        }
-      } else {
-        if (device && device.gatt.connected) {
-          characteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
-          device.gatt.disconnect();
-        }
-        connectButton.textContent = 'Connect to ESP32';
-        temperatureElement.textContent = 'Temperature: N/A';
-        humidityElement.textContent = 'Humidity: N/A';
-      }
-    });
-
-    function handleCharacteristicValueChanged(event) {
-      let value = new TextDecoder().decode(event.target.value);
-      let [temperature, humidity] = value.split(',').map(s => s.split(':')[1].trim());
-      temperatureElement.textContent = `Temperature: ${temperature}`;
-      humidityElement.textContent = `Humidity: ${humidity}`;
-
-      let now = new Date();
-      if (now <= new Date()) {
-        temperatureData.x.push(now);
-        temperatureData.y.push(parseFloat(temperature));
-        humidityData.x.push(now);
-        humidityData.y.push(parseFloat(humidity));
-        Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-        Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
-      }
-    }
-
-    clearButton.addEventListener('click', () => {
-      temperatureData.x = [];
-      temperatureData.y = [];
-      humidityData.x = [];
-      humidityData.y = [];
-      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
-      localStorage.removeItem('temperatureDataX');
-      localStorage.removeItem('temperatureDataY');
-      localStorage.removeItem('humidityDataX');
-      localStorage.removeItem('humidityDataY');
-    });
-
-    exportButton.addEventListener('click', () => {
-      let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "Time,Temperature (°C),Humidity (%)\n";
-
-      for (let i = 0; i < temperatureData.x.length; i++) {
-        let row = `${temperatureData.x[i].toISOString()},${temperatureData.y[i]},${humidityData.y[i]}`;
-        csvContent += row + "\n";
-      }
-
-      let encodedUri = encodeURI(csvContent);
-      let link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "sensor_data.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-  </script>
-</body>
-</html>
+.plotly {
+  margin: 0 auto; /* Center the Plotly graph */
+}
