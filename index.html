@@ -13,6 +13,23 @@
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
   <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
   <link rel="stylesheet" href="/UML-Temp-Sensor/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+    #data {
+      margin-top: 20px;
+    }
+    #chartContainer {
+      width: 100%;
+    }
+    .chart {
+      height: 300px; /* Adjust the height to make the plots shorter */
+    }
+  </style>
   <script src="/UML-Temp-Sensor/js/plotly.js"></script>
 </head>
 <body>
@@ -45,16 +62,16 @@
     let humidityElement = document.getElementById('humidity');
 
     let temperatureData = {
-      x: JSON.parse(localStorage.getItem('temperatureDataX')) || [],
-      y: JSON.parse(localStorage.getItem('temperatureDataY')) || [],
+      x: [],
+      y: [],
       mode: 'lines',
       name: 'Temperature (°C)',
       line: { color: 'red' }
     };
 
     let humidityData = {
-      x: JSON.parse(localStorage.getItem('humidityDataX')) || [],
-      y: JSON.parse(localStorage.getItem('humidityDataY')) || [],
+      x: [],
+      y: [],
       mode: 'lines',
       name: 'Humidity (%)',
       line: { color: 'blue' }
@@ -107,12 +124,6 @@
           temperatureData.y.push(parseFloat(temperature));
           humidityData.x.push(now);
           humidityData.y.push(parseFloat(humidity));
-
-          localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
-          localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
-          localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
-          localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
-
           Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
           Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
         });
