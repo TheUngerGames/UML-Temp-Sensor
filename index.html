@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#000000">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="application-name" content="HDC1080 Data">
-  <meta name="apple-mobile-web-app-title" content="HDC1080 Data">
+  <meta name="application-name" content="ESP32 Bluetooth Data">
+  <meta name="apple-mobile-web-app-title" content="ESP32 Bluetooth Data">
   <meta name="msapplication-starturl" content="/">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
@@ -35,6 +35,7 @@
 <body>
   <h1>ESP32 Bluetooth Data</h1>
   <button id="connectButton">Connect to ESP32</button>
+  <button id="exportButton">Export Data to CSV</button>
   <div id="data">
     <p id="temperature">Temperature: N/A</p>
     <p id="humidity">Humidity: N/A</p>
@@ -56,6 +57,7 @@
     }
 
     let connectButton = document.getElementById('connectButton');
+    let exportButton = document.getElementById('exportButton');
     let temperatureElement = document.getElementById('temperature');
     let humidityElement = document.getElementById('humidity');
 
@@ -80,7 +82,7 @@
       xaxis: { title: 'Time' },
       yaxis: { title: 'Temperature (°C)' },
       height: 300, // Adjust the height to make the plot shorter
-      margin: { l: 50, r: 10, t: 30, b: 30 } // Adjust margins for better mobile display
+      margin: { l: 50, r: 30, t: 30, b: 30 } // Adjust margins for better mobile display
     };
 
     let humidityLayout = {
@@ -88,11 +90,12 @@
       xaxis: { title: 'Time' },
       yaxis: { title: 'Humidity (%)' },
       height: 300, // Adjust the height to make the plot shorter
-      margin: { l: 50, r: 10, t: 30, b: 30 } // Adjust margins for better mobile display
+      margin: { l: 50, r: 30, t: 30, b: 30 } // Adjust margins for better mobile display
     };
-       let config = {
+    
+    let config = {
       displaylogo: false,
-      scrollZoom: false,
+      scrollZoom: false, // Disable scroll zoom to allow scrolling on mobile without moving the chart view
       modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
     };
 
@@ -137,6 +140,24 @@
       } catch (error) {
         console.error('Error:', error);
       }
+    });
+
+    exportButton.addEventListener('click', () => {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "Time,Temperature (°C),Humidity (%)\n";
+
+      for (let i = 0; i < temperatureData.x.length; i++) {
+        let row = `${temperatureData.x[i].toISOString()},${temperatureData.y[i]},${humidityData.y[i]}`;
+        csvContent += row + "\n";
+      }
+
+      let encodedUri = encodeURI(csvContent);
+      let link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", "sensor_data.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     });
   </script>
 </body>
