@@ -103,23 +103,18 @@
           humidityElement.textContent = `Humidity: ${humidity}`;
 
           let now = new Date();
-          let lastTimestamp = temperatureData.x.length > 0 ? new Date(temperatureData.x[temperatureData.x.length - 1]) : now;
-          
-          // Ensure the new data point is within a reasonable range
-          if (now >= lastTimestamp && now - lastTimestamp < 60000) { // 1 minute range
-            temperatureData.x.push(now);
-            temperatureData.y.push(parseFloat(temperature));
-            humidityData.x.push(now);
-            humidityData.y.push(parseFloat(humidity));
+          temperatureData.x.push(now);
+          temperatureData.y.push(parseFloat(temperature));
+          humidityData.x.push(now);
+          humidityData.y.push(parseFloat(humidity));
 
-            localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
-            localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
-            localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
-            localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
+          localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
+          localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
+          localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
+          localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
 
-            Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-            Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
-          }
+          Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+          Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
         });
 
         connectButton.textContent = 'Connected';
