@@ -88,11 +88,12 @@
       xaxis: { title: 'Time' },
       yaxis: { title: 'Humidity (%)' },
       height: 300, // Adjust the height to make the plot shorter
-      margin: { l: 30, r: 10, t: 30, b: 30 } // Adjust margins for better mobile display
+      margin: { l: 50, r: 10, t: 30, b: 30 } // Adjust margins for better mobile display
     };
        let config = {
       displaylogo: false,
-      modeBarButtonsToRemove: ['toImage', 'sendDataToCloud', 'zoom2d', 'pan2d', 'select2d', 'lasso2d', 'zoomIn2d', 'zoomOut2d', 'autoScale2d', 'resetScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
+      scrollZoom: false
+      modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
     };
 
     Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
