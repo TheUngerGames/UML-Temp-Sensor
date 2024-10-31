@@ -14,6 +14,11 @@
   <link rel="apple-touch-icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
   <link rel="stylesheet" href="/UML-Temp-Sensor/style.css">
   <script src="/UML-Temp-Sensor/js/plotly.js"></script>
+  <style>
+    body {
+      overscroll-behavior: none; /* Disable pull-down refresh on mobile devices */
+    }
+  </style>
 </head>
 <body>
   <h1>ESP32 Bluetooth Data</h1>
@@ -45,16 +50,16 @@
     let humidityElement = document.getElementById('humidity');
 
     let temperatureData = {
-      x: [],
-      y: [],
+      x: JSON.parse(localStorage.getItem('temperatureDataX')) || [],
+      y: JSON.parse(localStorage.getItem('temperatureDataY')) || [],
       mode: 'lines',
       name: 'Temperature (°C)',
       line: { color: 'red' }
     };
 
     let humidityData = {
-      x: [],
-      y: [],
+      x: JSON.parse(localStorage.getItem('humidityDataX')) || [],
+      y: JSON.parse(localStorage.getItem('humidityDataY')) || [],
       mode: 'lines',
       name: 'Humidity (%)',
       line: { color: 'blue' }
@@ -64,27 +69,34 @@
       title: 'Temperature Data',
       xaxis: { title: 'Time' },
       yaxis: { title: 'Temperature (°C)' },
-      height: 300, // Adjust the height to make the plot shorter
-      margin: { l: 50, r: 30, t: 30, b: 30 } // Adjust margins for better mobile display
+      height: 300,
+      margin: { l: 50, r: 30, t: 30, b: 30 }
     };
 
     let humidityLayout = {
       title: 'Humidity Data',
       xaxis: { title: 'Time' },
       yaxis: { title: 'Humidity (%)' },
-      height: 300, // Adjust the height to make the plot shorter
-      margin: { l: 50, r: 30, t: 30, b: 30 } // Adjust margins for better mobile display
+      height: 300,
+      margin: { l: 50, r: 30, t: 30, b: 30 }
     };
-    
+
     let config = {
       displaylogo: false,
-      scrollZoom: false, // Disable scroll zoom to allow scrolling on mobile without moving the chart view
+      scrollZoom: false,
       modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
     };
 
     Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
     Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
-    
+
+    window.addEventListener('beforeunload', () => {
+      localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
+      localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
+      localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
+      localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
+    });
+
     connectButton.addEventListener('click', async () => {
       try {
         const device = await navigator.bluetooth.requestDevice({
