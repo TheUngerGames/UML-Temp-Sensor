@@ -176,6 +176,12 @@
       link.click();
       document.body.removeChild(link);
     });
+
+    // Plot the saved data after refresh
+    window.addEventListener('load', () => {
+      Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
+      Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
+    });
   </script>
 </body>
 </html>
