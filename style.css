@@ -49,7 +49,3 @@ h1 {
   margin: 0 auto; /* Center the Plotly graph */
 }
 
-.plotly .modebar {
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-}
