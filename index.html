@@ -84,12 +84,14 @@
 
     Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
     Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
-    
-    connectButton.addEventListener('click', async () => {
+
+    async function connectToDevice() {
       try {
         const device = await navigator.bluetooth.requestDevice({
           filters: [{ services: ['9e54dbf9-9504-441b-bb14-4a859df25769'] }]
         });
+
+        localStorage.setItem('bluetoothDeviceId', device.id);
 
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService('9e54dbf9-9504-441b-bb14-4a859df25769');
@@ -125,11 +127,28 @@
           connectButton.disabled = false;
           temperatureElement.textContent = 'Temperature: N/A';
           humidityElement.textContent = 'Humidity: N/A';
+          localStorage.removeItem('bluetoothDeviceId');
+          clearData();
         });
       } catch (error) {
         console.error('Error:', error);
       }
-    });
+    }
+
+    function clearData() {
+      temperatureData.x = [];
+      temperatureData.y = [];
+      humidityData.x = [];
+      humidityData.y = [];
+      localStorage.removeItem('temperatureDataX');
+      localStorage.removeItem('temperatureDataY');
+      localStorage.removeItem('humidityDataX');
+      localStorage.removeItem('humidityDataY');
+      Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
+      Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
+    }
+
+    connectButton.addEventListener('click', connectToDevice);
 
     exportButton.addEventListener('click', () => {
       let csvContent = "data:text/csv;charset=utf-8,";
@@ -147,6 +166,22 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    });
+
+    window.addEventListener('load', async () => {
+      const savedDeviceId = localStorage.getItem('bluetoothDeviceId');
+      if (savedDeviceId) {
+        try {
+          const devices = await navigator.bluetooth.getDevices();
+          const savedDevice = devices.find(d => d.id === savedDeviceId);
+          if (savedDevice) {
+            await savedDevice.gatt.connect();
+            connectToDevice();
+          }
+        } catch (error) {
+          console.error('Error reconnecting to device:', error);
+        }
+      }
     });
   </script>
 </body>
