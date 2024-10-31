@@ -23,6 +23,8 @@
 <body>
   <h1>ESP32 Bluetooth Data</h1>
   <button id="connectButton">Connect to ESP32</button>
+  <button id="disconnectButton" disabled>Disconnect</button>
+  <button id="clearButton">Clear Data</button>
   <button id="exportButton">Export Data to CSV</button>
   <div id="data">
     <p id="temperature">Temperature: N/A</p>
@@ -45,6 +47,8 @@
     }
 
     let connectButton = document.getElementById('connectButton');
+    let disconnectButton = document.getElementById('disconnectButton');
+    let clearButton = document.getElementById('clearButton');
     let exportButton = document.getElementById('exportButton');
     let temperatureElement = document.getElementById('temperature');
     let humidityElement = document.getElementById('humidity');
@@ -115,26 +119,47 @@
           humidityElement.textContent = `Humidity: ${humidity}`;
 
           let now = new Date();
-          temperatureData.x.push(now);
-          temperatureData.y.push(parseFloat(temperature));
-          humidityData.x.push(now);
-          humidityData.y.push(parseFloat(humidity));
-          Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-          Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+          if (now <= new Date()) {
+            temperatureData.x.push(now);
+            temperatureData.y.push(parseFloat(temperature));
+            humidityData.x.push(now);
+            humidityData.y.push(parseFloat(humidity));
+            Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+            Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+          }
         });
 
         connectButton.textContent = 'Connected';
         connectButton.disabled = true;
+        disconnectButton.disabled = false;
 
         device.addEventListener('gattserverdisconnected', () => {
           connectButton.textContent = 'Connect to ESP32';
           connectButton.disabled = false;
+          disconnectButton.disabled = true;
           temperatureElement.textContent = 'Temperature: N/A';
           humidityElement.textContent = 'Humidity: N/A';
+        });
+
+        disconnectButton.addEventListener('click', () => {
+          device.gatt.disconnect();
         });
       } catch (error) {
         console.error('Error:', error);
       }
+    });
+
+    clearButton.addEventListener('click', () => {
+      temperatureData.x = [];
+      temperatureData.y = [];
+      humidityData.x = [];
+      humidityData.y = [];
+      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+      localStorage.removeItem('temperatureDataX');
+      localStorage.removeItem('temperatureDataY');
+      localStorage.removeItem('humidityDataX');
+      localStorage.removeItem('humidityDataY');
     });
 
     exportButton.addEventListener('click', () => {
