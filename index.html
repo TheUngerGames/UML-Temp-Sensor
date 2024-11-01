@@ -209,10 +209,7 @@
 
     exportButton.addEventListener('click', () => {
       getData((data) => {
-        if (data.length === 0) {
-          console.log('No data to export');
-          return;
-        }
+        
 
         let startTime = new Date(data[0].timestamp);
         let endTime = new Date(data[data.length - 1].timestamp);
