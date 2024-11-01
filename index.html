@@ -209,6 +209,39 @@
 
     exportButton.addEventListener('click', () => {
       getData((data) => {
+        if (data.length === 0) {
+          console.log('No data to export');
+          return;
+        }
+
+        let startTime = new Date(data[0].timestamp);
+        let endTime = new Date(data[data.length - 1].timestamp);
+
+        let formatTime = (date) => {
+          let hours = date.getHours();
+          let minutes = date.getMinutes();
+          let ampm = hours >= 12 ? 'PM' : 'AM';
+          hours = hours % 12;
+          hours = hours ? hours : 12; // the hour '0' should be '12'
+          minutes = minutes < 10 ? '0' + minutes : minutes;
+          let strTime = hours + ':' + minutes + ' ' + ampm;
+          return strTime;
+        };
+
+        let formatDate = (date) => {
+          let month = date.getMonth() + 1;
+          let day = date.getDate();
+          let year = date.getFullYear();
+          return month + '/' + day + '/' + year;
+        };
+
+        let startTimeStr = formatTime(startTime);
+        let endTimeStr = formatTime(endTime);
+        let startDateStr = formatDate(startTime);
+        let endDateStr = formatDate(endTime);
+
+        let fileName = `${startTimeStr} to ${endTimeStr} on ${startDateStr}.csv`;
+
         let csvContent = "data:text/csv;charset=utf-8,";
         csvContent += "Time,Temperature (°C),Humidity (%)\n";
 
@@ -220,7 +253,7 @@
         let encodedUri = encodeURI(csvContent);
         let link = document.createElement("a");
         link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "sensor_data.csv");
+        link.setAttribute("download", fileName);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
