@@ -194,16 +194,12 @@
         connectButton.textContent = 'Connect to ESP32';
         temperatureElement.textContent = 'Temperature: N/A';
         humidityElement.textContent = 'Humidity: N/A';
+        clearPlotData(); // Clear plot data on disconnect
       }
     });
 
     clearButton.addEventListener('click', () => {
-      temperatureData.x = [];
-      temperatureData.y = [];
-      humidityData.x = [];
-      humidityData.y = [];
-      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+      clearPlotData();
       clearData();
     });
 
@@ -277,6 +273,15 @@
         Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
         Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
       });
+    }
+
+    function clearPlotData() {
+      temperatureData.x = [];
+      temperatureData.y = [];
+      humidityData.x = [];
+      humidityData.y = [];
+      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
     }
 
     // Plot the saved data after refresh
