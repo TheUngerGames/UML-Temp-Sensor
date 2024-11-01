@@ -11,7 +11,7 @@ h1 {
   color: #333;
 }
 
-#connectButton, #exportButton, #clearButton, #disconnectButton {
+#connectButton, #exportButton, #clearButton, #disconnectButton, #heaterButton {
   background-color: #007bff;
   color: white;
   border: none;
@@ -25,6 +25,14 @@ h1 {
 #connectButton:disabled {
   background-color: #cccccc;
   cursor: not-allowed;
+}
+
+#heaterButton.on {
+  background-color: #28a745; /* Green for ON state */
+}
+
+#heaterButton.off {
+  background-color: #dc3545; /* Red for OFF state */
 }
 
 #data {
