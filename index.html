@@ -29,6 +29,7 @@
   <button id="connectButton">Connect to ESP32</button>
   <button id="clearButton">Clear Data</button>
   <button id="exportButton">Export Data to CSV</button>
+  <button id="heaterButton">Turn Heater ON</button>
   <div id="data">
     <p id="temperature">Temperature: N/A</p>
     <p id="humidity">Humidity: N/A</p>
@@ -52,12 +53,16 @@
     let connectButton = document.getElementById('connectButton');
     let clearButton = document.getElementById('clearButton');
     let exportButton = document.getElementById('exportButton');
+    let heaterButton = document.getElementById('heaterButton');
     let temperatureElement = document.getElementById('temperature');
     let humidityElement = document.getElementById('humidity');
 
     let db;
     let buffer = [];
     let isLoadingData = true;
+    let heaterOn = false;
+    let characteristic;
+    let heaterCharacteristic;
 
     const request = indexedDB.open('SensorDataDB', 1);
 
@@ -196,7 +201,6 @@
     };
 
     let device;
-    let characteristic;
 
     connectButton.addEventListener('click', async () => {
       if (connectButton.textContent === 'Connect to ESP32') {
@@ -210,6 +214,7 @@
           const server = await device.gatt.connect();
           const service = await server.getPrimaryService('9e54dbf9-9504-441b-bb14-4a859df25769');
           characteristic = await service.getCharacteristic('9e54dbf9-9504-441b-bb14-4a859df25769');
+          heaterCharacteristic = await service.getCharacteristic('9e54dbf9-9504-441b-bb14-4a859df25770');
 
           characteristic.startNotifications();
           characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
@@ -234,6 +239,18 @@
     clearButton.addEventListener('click', () => {
       clearPlotData();
       clearData();
+    });
+
+    heaterButton.addEventListener('click', () => {
+      if (heaterOn) {
+        heaterCharacteristic.writeValue(new TextEncoder().encode("OFF"));
+        heaterButton.textContent = 'Turn Heater ON';
+        heaterOn = false;
+      } else {
+        heaterCharacteristic.writeValue(new TextEncoder().encode("ON"));
+        heaterButton.textContent = 'Turn Heater OFF';
+        heaterOn = true;
+      }
     });
 
     exportButton.addEventListener('click', () => {
