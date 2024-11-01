@@ -65,7 +65,7 @@
     request.onsuccess = (event) => {
       db = event.target.result;
       console.log('Database opened successfully');
-      plotData(); // Plot data after opening the database
+      plotInitialData(); // Plot initial data after opening the database
     };
 
     request.onupgradeneeded = (event) => {
@@ -122,7 +122,7 @@
       };
     }
 
-    async function plotData() {
+    function plotInitialData() {
       getData((data) => {
         temperatureData.x = data.map(entry => new Date(entry.timestamp));
         temperatureData.y = data.map(entry => entry.temperature);
@@ -274,13 +274,14 @@
 
       addData(parseFloat(temperature), parseFloat(humidity));
 
-      temperatureData.x.push(new Date());
+      let newTime = new Date();
+      temperatureData.x.push(newTime);
       temperatureData.y.push(parseFloat(temperature));
-      humidityData.x.push(new Date());
+      humidityData.x.push(newTime);
       humidityData.y.push(parseFloat(humidity));
 
-      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+      Plotly.extendTraces('temperatureChart', { x: [[newTime]], y: [[parseFloat(temperature)]] }, [0]);
+      Plotly.extendTraces('humidityChart', { x: [[newTime]], y: [[parseFloat(humidity)]] }, [0]);
     }
 
     function clearPlotData() {
@@ -288,8 +289,8 @@
       temperatureData.y = [];
       humidityData.x = [];
       humidityData.y = [];
-      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+      Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
+      Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
     }
 
     // Handle device disconnection
@@ -301,7 +302,7 @@
     }
 
     // Plot the saved data after refresh
-    window.addEventListener('load', plotData);
+    window.addEventListener('load', plotInitialData);
   </script>
 </body>
 </html>
