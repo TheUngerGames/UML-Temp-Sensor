@@ -56,6 +56,9 @@
     let humidityElement = document.getElementById('humidity');
 
     let db;
+    let buffer = [];
+    let isLoadingData = true;
+
     const request = indexedDB.open('SensorDataDB', 1);
 
     request.onerror = (event) => {
@@ -65,7 +68,10 @@
     request.onsuccess = (event) => {
       db = event.target.result;
       console.log('Database opened successfully');
-      plotInitialData(); // Plot initial data after opening the database
+      plotInitialData().then(() => {
+        isLoadingData = false;
+        plotBufferedData();
+      });
     };
 
     request.onupgradeneeded = (event) => {
@@ -123,15 +129,32 @@
     }
 
     async function plotInitialData() {
-      getData((data) => {
-        temperatureData.x = data.map(entry => new Date(entry.timestamp));
-        temperatureData.y = data.map(entry => entry.temperature);
-        humidityData.x = data.map(entry => new Date(entry.timestamp));
-        humidityData.y = data.map(entry => entry.humidity);
+      return new Promise((resolve) => {
+        getData((data) => {
+          temperatureData.x = data.map(entry => new Date(entry.timestamp));
+          temperatureData.y = data.map(entry => entry.temperature);
+          humidityData.x = data.map(entry => new Date(entry.timestamp));
+          humidityData.y = data.map(entry => entry.humidity);
 
-        Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
-        Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
+          Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
+          Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
+
+          resolve();
+        });
       });
+    }
+
+    function plotBufferedData() {
+      buffer.forEach(({ temperature, humidity, timestamp }) => {
+        temperatureData.x.push(timestamp);
+        temperatureData.y.push(temperature);
+        humidityData.x.push(timestamp);
+        humidityData.y.push(humidity);
+
+        Plotly.extendTraces('temperatureChart', { x: [[timestamp]], y: [[temperature]] }, [0]);
+        Plotly.extendTraces('humidityChart', { x: [[timestamp]], y: [[humidity]] }, [0]);
+      });
+      buffer = [];
     }
 
     let temperatureData = {
@@ -272,16 +295,23 @@
       temperatureElement.textContent = `Temperature: ${temperature}`;
       humidityElement.textContent = `Humidity: ${humidity}`;
 
-      addData(parseFloat(temperature), parseFloat(humidity));
-
       let newTime = new Date();
-      temperatureData.x.push(newTime);
-      temperatureData.y.push(parseFloat(temperature));
-      humidityData.x.push(newTime);
-      humidityData.y.push(parseFloat(humidity));
+      let temperatureValue = parseFloat(temperature);
+      let humidityValue = parseFloat(humidity);
 
-      Plotly.extendTraces('temperatureChart', { x: [[newTime]], y: [[parseFloat(temperature)]] }, [0]);
-      Plotly.extendTraces('humidityChart', { x: [[newTime]], y: [[parseFloat(humidity)]] }, [0]);
+      addData(temperatureValue, humidityValue);
+
+      if (isLoadingData) {
+        buffer.push({ temperature: temperatureValue, humidity: humidityValue, timestamp: newTime });
+      } else {
+        temperatureData.x.push(newTime);
+        temperatureData.y.push(temperatureValue);
+        humidityData.x.push(newTime);
+        humidityData.y.push(humidityValue);
+
+        Plotly.extendTraces('temperatureChart', { x: [[newTime]], y: [[temperatureValue]] }, [0]);
+        Plotly.extendTraces('humidityChart', { x: [[newTime]], y: [[humidityValue]] }, [0]);
+      }
     }
 
     function clearPlotData() {
