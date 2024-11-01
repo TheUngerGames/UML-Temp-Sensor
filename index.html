@@ -18,6 +18,10 @@
     body {
       overscroll-behavior: none; /* Disable pull-down refresh on mobile devices */
     }
+    .disconnected {
+      background-color: red;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -168,12 +172,17 @@
       modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
     };
 
+    let device;
+    let characteristic;
+
     connectButton.addEventListener('click', async () => {
       if (connectButton.textContent === 'Connect to ESP32') {
         try {
           device = await navigator.bluetooth.requestDevice({
             filters: [{ services: ['9e54dbf9-9504-441b-bb14-4a859df25769'] }]
           });
+
+          device.addEventListener('gattserverdisconnected', handleDisconnection);
 
           const server = await device.gatt.connect();
           const service = await server.getPrimaryService('9e54dbf9-9504-441b-bb14-4a859df25769');
@@ -183,6 +192,7 @@
           characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
 
           connectButton.textContent = 'Disconnect from ESP32';
+          connectButton.classList.remove('disconnected');
         } catch (error) {
           console.error('Error:', error);
         }
@@ -192,9 +202,9 @@
           device.gatt.disconnect();
         }
         connectButton.textContent = 'Connect to ESP32';
+        connectButton.classList.add('disconnected');
         temperatureElement.textContent = 'Temperature: N/A';
         humidityElement.textContent = 'Humidity: N/A';
-        clearPlotData(); // Clear plot data on disconnect
       }
     });
 
@@ -264,15 +274,13 @@
 
       addData(parseFloat(temperature), parseFloat(humidity));
 
-      getData((data) => {
-        temperatureData.x = data.map(entry => new Date(entry.timestamp));
-        temperatureData.y = data.map(entry => entry.temperature);
-        humidityData.x = data.map(entry => new Date(entry.timestamp));
-        humidityData.y = data.map(entry => entry.humidity);
+      temperatureData.x.push(new Date());
+      temperatureData.y.push(parseFloat(temperature));
+      humidityData.x.push(new Date());
+      humidityData.y.push(parseFloat(humidity));
 
-        Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-        Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
-      });
+      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
     }
 
     function clearPlotData() {
@@ -282,6 +290,14 @@
       humidityData.y = [];
       Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
       Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+    }
+
+    // Handle device disconnection
+    function handleDisconnection() {
+      connectButton.textContent = 'Connect to ESP32';
+      connectButton.classList.add('disconnected');
+      temperatureElement.textContent = 'Temperature: N/A';
+      humidityElement.textContent = 'Humidity: N/A';
     }
 
     // Plot the saved data after refresh
