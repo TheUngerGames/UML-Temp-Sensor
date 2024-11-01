@@ -125,6 +125,8 @@
           return;
         }
 
+        console.log('Plotting data:', data);
+
         temperatureData.x = data.map(entry => new Date(entry.timestamp));
         temperatureData.y = data.map(entry => entry.temperature);
         humidityData.x = data.map(entry => new Date(entry.timestamp));
@@ -278,6 +280,8 @@
           console.log('No data to plot');
           return;
         }
+
+        console.log('Plotting data:', data);
 
         temperatureData.x = data.map(entry => new Date(entry.timestamp));
         temperatureData.y = data.map(entry => entry.temperature);
