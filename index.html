@@ -51,7 +51,123 @@
     let temperatureElement = document.getElementById('temperature');
     let humidityElement = document.getElementById('humidity');
 
-    // Event listeners
+    let db;
+    const request = indexedDB.open('SensorDataDB', 1);
+
+    request.onerror = (event) => {
+      console.error('Database error:', event.target.errorCode);
+    };
+
+    request.onsuccess = (event) => {
+      db = event.target.result;
+      console.log('Database opened successfully');
+      plotData(); // Plot data after opening the database
+    };
+
+    request.onupgradeneeded = (event) => {
+      db = event.target.result;
+      const objectStore = db.createObjectStore('sensorData', { keyPath: 'timestamp' });
+      objectStore.createIndex('temperature', 'temperature', { unique: false });
+      objectStore.createIndex('humidity', 'humidity', { unique: false });
+    };
+
+    function addData(temperature, humidity) {
+      const transaction = db.transaction(['sensorData'], 'readwrite');
+      const objectStore = transaction.objectStore('sensorData');
+      const data = {
+        timestamp: new Date().toISOString(),
+        temperature: temperature,
+        humidity: humidity
+      };
+      const request = objectStore.add(data);
+
+      request.onsuccess = () => {
+        console.log('Data added to the database');
+      };
+
+      request.onerror = (event) => {
+        console.error('Error adding data:', event.target.errorCode);
+      };
+    }
+
+    function getData(callback) {
+      const transaction = db.transaction(['sensorData'], 'readonly');
+      const objectStore = transaction.objectStore('sensorData');
+      const request = objectStore.getAll();
+
+      request.onsuccess = (event) => {
+        callback(event.target.result);
+      };
+
+      request.onerror = (event) => {
+        console.error('Error retrieving data:', event.target.errorCode);
+      };
+    }
+
+    function clearData() {
+      const transaction = db.transaction(['sensorData'], 'readwrite');
+      const objectStore = transaction.objectStore('sensorData');
+      const request = objectStore.clear();
+
+      request.onsuccess = () => {
+        console.log('Data cleared from the database');
+      };
+
+      request.onerror = (event) => {
+        console.error('Error clearing data:', event.target.errorCode);
+      };
+    }
+
+    function plotData() {
+      getData((data) => {
+        temperatureData.x = data.map(entry => new Date(entry.timestamp));
+        temperatureData.y = data.map(entry => entry.temperature);
+        humidityData.x = data.map(entry => new Date(entry.timestamp));
+        humidityData.y = data.map(entry => entry.humidity);
+
+        Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
+        Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
+      });
+    }
+
+    let temperatureData = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Temperature (°C)',
+      line: { color: 'red' }
+    };
+
+    let humidityData = {
+      x: [],
+      y: [],
+      mode: 'lines',
+      name: 'Humidity (%)',
+      line: { color: 'blue' }
+    };
+
+    let temperatureLayout = {
+      title: 'Temperature Data',
+      xaxis: { title: 'Time' },
+      yaxis: { title: 'Temperature (°C)' },
+      height: 300,
+      margin: { l: 50, r: 30, t: 30, b: 30 }
+    };
+
+    let humidityLayout = {
+      title: 'Humidity Data',
+      xaxis: { title: 'Time' },
+      yaxis: { title: 'Humidity (%)' },
+      height: 300,
+      margin: { l: 50, r: 30, t: 30, b: 30 }
+    };
+
+    let config = {
+      displaylogo: false,
+      scrollZoom: false,
+      modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
+    };
+
     connectButton.addEventListener('click', async () => {
       if (connectButton.textContent === 'Connect to ESP32') {
         try {
@@ -88,87 +204,27 @@
       humidityData.y = [];
       Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
       Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
-      localStorage.removeItem('temperatureDataX');
-      localStorage.removeItem('temperatureDataY');
-      localStorage.removeItem('humidityDataX');
-      localStorage.removeItem('humidityDataY');
+      clearData();
     });
 
     exportButton.addEventListener('click', () => {
-      let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "Time,Temperature (°C),Humidity (%)\n";
+      getData((data) => {
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += "Time,Temperature (°C),Humidity (%)\n";
 
-      for (let i = 0; i < temperatureData.x.length; i++) {
-        let row = `${temperatureData.x[i].toISOString()},${temperatureData.y[i]},${humidityData.y[i]}`;
-        csvContent += row + "\n";
-      }
+        data.forEach(entry => {
+          let row = `${new Date(entry.timestamp).toISOString()},${entry.temperature},${entry.humidity}`;
+          csvContent += row + "\n";
+        });
 
-      let encodedUri = encodeURI(csvContent);
-      let link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", "sensor_data.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    });
-
-    let temperatureData = {
-      x: JSON.parse(localStorage.getItem('temperatureDataX')) || [],
-      y: JSON.parse(localStorage.getItem('temperatureDataY')) || [],
-      mode: 'lines',
-      name: 'Temperature (°C)',
-      line: { color: 'red' }
-    };
-
-    let humidityData = {
-      x: JSON.parse(localStorage.getItem('humidityDataX')) || [],
-      y: JSON.parse(localStorage.getItem('humidityDataY')) || [],
-      mode: 'lines',
-      name: 'Humidity (%)',
-      line: { color: 'blue' }
-    };
-
-    let temperatureLayout = {
-      title: 'Temperature Data',
-      xaxis: { title: 'Time' },
-      yaxis: { title: 'Temperature (°C)' },
-      height: 300,
-      margin: { l: 50, r: 30, t: 30, b: 30 }
-    };
-
-    let humidityLayout = {
-      title: 'Humidity Data',
-      xaxis: { title: 'Time' },
-      yaxis: { title: 'Humidity (%)' },
-      height: 300,
-      margin: { l: 50, r: 30, t: 30, b: 30 }
-    };
-
-    let config = {
-      displaylogo: false,
-      scrollZoom: false,
-      modeBarButtonsToRemove: [ 'zoom2d', 'pan2d', 'select2d', 'zoomIn2d', 'zoomOut2d', 'hoverClosestCartesian', 'hoverCompareCartesian']
-    };
-
-    function plotData() {
-      // Filter out future data points
-      const now = new Date();
-      temperatureData.x = temperatureData.x.filter(date => new Date(date) <= now);
-      temperatureData.y = temperatureData.y.slice(0, temperatureData.x.length);
-      humidityData.x = humidityData.x.filter(date => new Date(date) <= now);
-      humidityData.y = humidityData.y.slice(0, humidityData.x.length);
-
-      Plotly.newPlot('temperatureChart', [temperatureData], temperatureLayout, config);
-      Plotly.newPlot('humidityChart', [humidityData], humidityLayout, config);
-    }
-
-    plotData();
-
-    window.addEventListener('beforeunload', () => {
-      localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
-      localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
-      localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
-      localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
+        let encodedUri = encodeURI(csvContent);
+        let link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", "sensor_data.csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      });
     });
 
     function handleCharacteristicValueChanged(event) {
@@ -177,20 +233,17 @@
       temperatureElement.textContent = `Temperature: ${temperature}`;
       humidityElement.textContent = `Humidity: ${humidity}`;
 
-      let now = new Date();
-      temperatureData.x.push(now);
-      temperatureData.y.push(parseFloat(temperature));
-      humidityData.x.push(now);
-      humidityData.y.push(parseFloat(humidity));
+      addData(parseFloat(temperature), parseFloat(humidity));
 
-      // Save data to localStorage frequently
-      localStorage.setItem('temperatureDataX', JSON.stringify(temperatureData.x));
-      localStorage.setItem('temperatureDataY', JSON.stringify(temperatureData.y));
-      localStorage.setItem('humidityDataX', JSON.stringify(humidityData.x));
-      localStorage.setItem('humidityDataY', JSON.stringify(humidityData.y));
+      getData((data) => {
+        temperatureData.x = data.map(entry => new Date(entry.timestamp));
+        temperatureData.y = data.map(entry => entry.temperature);
+        humidityData.x = data.map(entry => new Date(entry.timestamp));
+        humidityData.y = data.map(entry => entry.humidity);
 
-      Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
-      Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+        Plotly.update('temperatureChart', { x: [temperatureData.x], y: [temperatureData.y] }, [0]);
+        Plotly.update('humidityChart', { x: [humidityData.x], y: [humidityData.y] }, [0]);
+      });
     }
 
     // Plot the saved data after refresh
