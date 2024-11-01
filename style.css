@@ -11,7 +11,7 @@ h1 {
   color: #333;
 }
 
-#connectButton, #exportButton, #clearButton, #disconnectButton {
+#connectButton, #exportButton, #clearButton, #heaterButton {
   background-color: #007bff;
   color: white;
   border: none;
@@ -47,4 +47,9 @@ h1 {
 
 .plotly {
   margin: 0 auto; /* Center the Plotly graph */
+}
+
+.disconnected {
+  background-color: red;
+  color: white;
 }
